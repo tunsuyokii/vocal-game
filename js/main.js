@@ -149,8 +149,13 @@ async function startRhythm() {
           if (data.errors && data.errors.length > 0) {
             data.errors.forEach((e) => {
               const li = document.createElement('li');
-              const sung = e.sung ? (RhythmGame.LABELS[e.sung] || e.sung) : '—';
-              li.textContent = 'Нота ' + (RhythmGame.LABELS[e.expected] || e.expected) + ' → спели ' + sung;
+              const expectedLabel = RhythmGame.LABELS[e.expected] || e.expected;
+              const sungLabel = e.sung ? (RhythmGame.LABELS[e.sung] || e.sung) : '—';
+              if (e.expected === e.sung) {
+                li.textContent = 'Нота ' + expectedLabel + ' — слабое удержание (' + Math.round(e.holdRatio * 100) + '%)';
+              } else {
+                li.textContent = 'Нота ' + expectedLabel + ' → спели ' + sungLabel;
+              }
               el.resultErrorsList.appendChild(li);
             });
           }
