@@ -169,6 +169,8 @@ function playNote(noteName, loop = true) {
   });
 }
 
+const C_DO2_FREQ_THRESHOLD = 400;
+
 function freqToNote(freq) {
   if (!freq || freq < 65 || freq > 1400) return null;
   const A4 = 440;
@@ -176,7 +178,7 @@ function freqToNote(freq) {
   const noteIndex = Math.round(midi) % 12;
   const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const name = noteNames[noteIndex];
-  if (name === 'C' && midi >= 72) return 'Do2';
+  if (name === 'C') return freq >= C_DO2_FREQ_THRESHOLD ? 'Do2' : 'C';
   if (NOTE_NAMES.includes(name)) return name;
   const sharpToNatural = { 'C#': 'C', 'D#': 'D', 'F#': 'F', 'G#': 'G', 'A#': 'A' };
   return sharpToNatural[name] || null;
@@ -206,7 +208,15 @@ function getPeakFrequency() {
   const r = dataArray[maxIndex + 1] || 0;
   const delta = 0.5 * (l - r) / (l - 2 * c + r);
   const peakIndex = maxIndex + (isFinite(delta) ? delta : 0);
-  const freq = (peakIndex * sampleRate) / fftSize;
+  let freq = (peakIndex * sampleRate) / fftSize;
+  if (freq > 380) {
+    const fundBin = (freq / 2) * fftSize / sampleRate;
+    const iFund = Math.round(fundBin);
+    if (iFund >= 1 && iFund < bufferLength) {
+      const magFund = dataArray[iFund] || 0;
+      if (magFund >= maxMag * 0.35) freq = freq / 2;
+    }
+  }
   return freq;
 }
 
