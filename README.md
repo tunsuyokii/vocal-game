@@ -18,25 +18,24 @@
 4. Нажмите «Начать игру».
 5. Слушайте ноту с «пианино» и пойте её, когда шарик подъезжает к стене — тогда он проедет дальше.
 
-## Деплой на GitHub Pages (отдельный репозиторий)
+## Деплой на GitHub Pages
 
-Проект — статический сайт без сборки, подходит для публикации на GitHub Pages в **отдельном** репозитории.
+Репозиторий: [github.com/tunsuyokii/vocal-game](https://github.com/tunsuyokii/vocal-game).  
+Сайт: **https://tunsuyokii.github.io/vocal-game/**
 
-1. Создайте **новый пустой репозиторий** на GitHub (без README, без .gitignore).
+### Первая публикация
+
+1. Создайте на GitHub пустой репозиторий **vocal-game**: [Create a new repository](https://github.com/new?name=vocal-game) (Public, без README/.gitignore).
 2. В каталоге проекта выполните:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit: Vocal Ball"
-   git branch -M main
-   git remote add origin https://github.com/<ВАШ_USERNAME>/<ИМЯ_РЕПО>.git
+   ```powershell
+   cd c:\Projects\vocal-game
+   git remote add origin https://github.com/tunsuyokii/vocal-game.git
    git push -u origin main
    ```
-3. В репозитории: **Settings → Pages**.
-4. В разделе **Source** выберите **Deploy from a branch**.
-5. В **Branch** выберите `main` и папку `/ (root)`, нажмите Save.
-6. Через 1–2 минуты сайт будет доступен по адресу:
-   `https://<ВАШ_USERNAME>.github.io/<ИМЯ_РЕПО>/`
+3. В репозитории: **Settings → Pages** → Source: **GitHub Actions** (workflow `Deploy to GitHub Pages`).
+4. После следующего push (или повторного запуска workflow) сайт будет доступен по ссылке выше.
+
+Дальнейший деплой: при каждом `git push origin main` workflow автоматически публикует сайт.
 
 Для работы микрофона в Production нужен **HTTPS** — на GitHub Pages он включён по умолчанию.
 
