@@ -108,7 +108,7 @@ function getPeakFrequency() {
       maxIndex = i;
     }
   }
-  if (maxMag < 25) return null;
+  if (maxMag < 55) return null;
   const sampleRate = audioContext.sampleRate;
   // Parabolic interpolation for better frequency estimate
   const l = dataArray[maxIndex - 1] || 0;
@@ -126,9 +126,9 @@ async function initMicrophone(onNoteDetected) {
   micSource = ctx.createMediaStreamSource(micStream);
   analyser = ctx.createAnalyser();
   analyser.fftSize = fftSize;
-  analyser.smoothingTimeConstant = 0.7;
-  analyser.minDecibels = -60;
-  analyser.maxDecibels = -10;
+  analyser.smoothingTimeConstant = 0.88;
+  analyser.minDecibels = -50;
+  analyser.maxDecibels = -15;
   micSource.connect(analyser);
   bufferLength = analyser.frequencyBinCount;
   dataArray = new Uint8Array(bufferLength);
@@ -142,7 +142,7 @@ async function initMicrophone(onNoteDetected) {
     if (note) {
       if (note === lastNote) {
         stableCount++;
-        if (stableCount >= 3) onNoteDetected(note);
+        if (stableCount >= 10) onNoteDetected(note);
       } else {
         lastNote = note;
         stableCount = 1;

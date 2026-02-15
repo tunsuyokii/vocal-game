@@ -5,7 +5,7 @@
 const CANVAS_W = 800;
 const CANVAS_H = 400;
 const BALL_R = 18;
-const BALL_SPEED = 2.2;
+const BALL_SPEED = 1.0;
 const GRAVITY = 0.35;
 const FLOOR_Y = CANVAS_H - 40;
 const JUMP_VEL = -9;
@@ -35,9 +35,10 @@ const NOTE_LABELS = { C: 'До', D: 'Ре', E: 'Ми', F: 'Фа', G: 'Соль',
 function createLevel() {
   const obstacles = [];
   const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-  const spacing = 90;
-  const startX = 180;
-  const wallW = 14;
+  const spacing = 110;
+  const startX = 200;
+  const wallW = 18;
+  const NOTE_SWITCH_MARGIN = 55;
   const wallH = 120;
   const gapY = FLOOR_Y - wallH;
 
@@ -75,9 +76,10 @@ function getObstacleAt(x) {
 
 function getNextObstacleNote(ballX) {
   if (!level) return null;
+  const margin = 55;
   for (const o of level.obstacles) {
     if (ballX + BALL_R < o.x) return o.note;
-    if (ballX - BALL_R <= o.x + o.w) return o.note;
+    if (ballX <= o.x + o.w + margin) return o.note;
   }
   return null;
 }
