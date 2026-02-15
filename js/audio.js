@@ -33,6 +33,7 @@ let analyser = null;
 let micSource = null;
 let currentNoteSource = null;
 let gainNode = null;
+const MASTER_GAIN = 5.0;
 let noteBuffers = {};
 let fftSize = 2048;
 let dataArray = null;
@@ -49,7 +50,7 @@ function ensureGain() {
   const ctx = getAudioContext();
   if (!gainNode) {
     gainNode = ctx.createGain();
-    gainNode.gain.value = 3.5;
+    gainNode.gain.value = MASTER_GAIN;
     gainNode.connect(ctx.destination);
   }
 }
@@ -70,7 +71,10 @@ function playBuffer(buffer) {
   const source = ctx.createBufferSource();
   source.buffer = buffer;
   source.loop = true;
-  source.connect(gainNode);
+  const g = ctx.createGain();
+  g.gain.value = 2.0;
+  source.connect(g);
+  g.connect(gainNode);
   source.start(0);
   currentNoteSource = source;
 }
@@ -124,7 +128,10 @@ function playNoteOnce(noteName) {
       source.buffer = buffer;
       source.loop = false;
       source.onended = () => resolve(buffer.duration);
-      source.connect(gainNode);
+      const g = ctx.createGain();
+      g.gain.value = 2.0;
+      source.connect(g);
+      g.connect(gainNode);
       source.start(0);
       currentNoteSource = source;
     }
