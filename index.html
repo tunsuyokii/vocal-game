@@ -12,9 +12,32 @@
 <body>
   <div class="screen screen-start" id="screen-start">
     <h1 class="title">Vocal Ball</h1>
-    <p class="subtitle">Спой нужную ноту — шарик преодолеет препятствие</p>
-    <button class="btn-neon" id="btn-start">Начать игру</button>
-    <p class="hint">Разрешите доступ к микрофону для управления голосом</p>
+    <p class="subtitle">Выберите режим</p>
+    <div class="menu-buttons">
+      <button class="btn-neon" id="btn-platform">Платформер</button>
+      <button class="btn-neon" id="btn-rhythm">Оценка попадания в ноту</button>
+    </div>
+    <p class="hint">Разрешите доступ к микрофону</p>
+  </div>
+
+  <div class="screen screen-countdown hidden" id="screen-countdown">
+    <div class="countdown-number" id="countdown-num">5</div>
+    <p class="countdown-hint">Готовьтесь…</p>
+  </div>
+
+  <div class="screen screen-rhythm hidden" id="screen-rhythm">
+    <div class="rhythm-hud">
+      <span class="rhythm-current" id="rhythm-current">—</span>
+      <span class="rhythm-progress" id="rhythm-progress">0 / 15</span>
+    </div>
+    <p class="rhythm-instruction" id="rhythm-instruction">Пойте в микрофон</p>
+  </div>
+
+  <div class="screen screen-result hidden" id="screen-result">
+    <h2 class="result-title">Результат</h2>
+    <div class="result-score" id="result-score">0 %</div>
+    <p class="result-detail" id="result-detail">0 попаданий из 15</p>
+    <button class="btn-neon" id="btn-back">В меню</button>
   </div>
 
   <div class="screen screen-game hidden" id="screen-game">
@@ -39,6 +62,7 @@
 
   <script src="js/audio.js"></script>
   <script src="js/game.js"></script>
+  <script src="js/rhythm.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

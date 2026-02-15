@@ -2,7 +2,7 @@
  * Piano notes from MP3 (loop until next note) and pitch detection for vocal control.
  */
 
-const NOTE_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+const NOTE_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'Do2'];
 const NOTE_FREQS = {
   C: 261.63,
   D: 293.66,
@@ -10,7 +10,8 @@ const NOTE_FREQS = {
   F: 349.23,
   G: 392.00,
   A: 440.00,
-  B: 493.88
+  B: 493.88,
+  Do2: 523.25
 };
 
 const NOTE_FILE_NAMES = {
@@ -20,7 +21,8 @@ const NOTE_FILE_NAMES = {
   F: ['F', 'Фа'],
   G: ['G', 'Соль'],
   A: ['A', 'Ля'],
-  B: ['B', 'Си']
+  B: ['B', 'Си'],
+  Do2: ['Do2', 'C2']
 };
 
 const NOTES_BASE = 'sounds/notes/';
@@ -107,6 +109,70 @@ function playNoteOscillator(noteName) {
   currentNoteSource = osc1;
 }
 
+function getNoteDuration(noteName) {
+  const buf = noteBuffers[noteName];
+  return buf ? buf.duration : 0;
+}
+
+function playNoteOnce(noteName) {
+  return new Promise((resolve) => {
+    stopCurrentNote();
+    ensureGain();
+    function playBuf(buffer) {
+      const ctx = getAudioContext();
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = false;
+      source.onended = () => resolve(buffer.duration);
+      source.connect(gainNode);
+      source.start(0);
+      currentNoteSource = source;
+    }
+    if (noteBuffers[noteName]) {
+      playBuf(noteBuffers[noteName]);
+      return;
+    }
+    if (NOTE_FREQS[noteName]) {
+      const ctx = getAudioContext();
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = NOTE_FREQS[noteName];
+      const g = ctx.createGain();
+      g.gain.value = 0.3;
+      osc.connect(g);
+      g.connect(gainNode);
+      osc.start(0);
+      const dur = 1;
+      g.gain.setTargetAtTime(0, ctx.currentTime + dur - 0.05, 0.02);
+      osc.stop(ctx.currentTime + dur);
+      currentNoteSource = osc;
+      setTimeout(() => resolve(dur), dur * 1000);
+      return;
+    }
+    loadNoteBuffer(noteName).then((buffer) => {
+      if (buffer) {
+        noteBuffers[noteName] = buffer;
+        playBuf(buffer);
+      } else if (NOTE_FREQS[noteName]) {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = NOTE_FREQS[noteName];
+        const g = ctx.createGain();
+        g.gain.value = 0.3;
+        osc.connect(g);
+        g.connect(gainNode);
+        osc.start(0);
+        osc.stop(ctx.currentTime + 1);
+        currentNoteSource = osc;
+        setTimeout(() => resolve(1), 1000);
+      } else {
+        resolve(1);
+      }
+    });
+  });
+}
+
 function playNote(noteName, loop = true) {
   if (!NOTE_NAMES.includes(noteName)) return;
   stopCurrentNote();
@@ -133,6 +199,7 @@ function freqToNote(freq) {
   const noteIndex = Math.round(midi) % 12;
   const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const name = noteNames[noteIndex];
+  if (name === 'C' && midi >= 72) return 'Do2';
   if (NOTE_NAMES.includes(name)) return name;
   const sharpToNatural = { 'C#': 'C', 'D#': 'D', 'F#': 'F', 'G#': 'G', 'A#': 'A' };
   return sharpToNatural[name] || null;
@@ -230,12 +297,51 @@ function stopMicrophone() {
   }
 }
 
+function metronome(beats, bpm) {
+  const ctx = getAudioContext();
+  ensureGain();
+  const intervalMs = (60 / bpm) * 1000;
+  return new Promise((resolve) => {
+    let count = 0;
+    function tick() {
+      if (count >= beats) {
+        resolve();
+        return;
+      }
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = 440;
+      const g = ctx.createGain();
+      g.gain.value = 0.15;
+      osc.connect(g);
+      g.connect(gainNode);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.08);
+      count++;
+      setTimeout(tick, intervalMs);
+    }
+    tick();
+  });
+}
+
+async function preloadRhythmNotes(noteNames) {
+  for (const name of noteNames) {
+    if (noteBuffers[name]) continue;
+    const buf = await loadNoteBuffer(name);
+    if (buf) noteBuffers[name] = buf;
+  }
+}
+
 window.AudioModule = {
   NOTE_NAMES,
   NOTE_FREQS,
   playNote,
+  playNoteOnce,
   stopCurrentNote,
+  getNoteDuration,
   initMicrophone,
   stopMicrophone,
-  getAudioContext
+  getAudioContext,
+  metronome,
+  preloadRhythmNotes
 };

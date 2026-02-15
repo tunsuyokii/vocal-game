@@ -75,6 +75,16 @@ body {
   line-height: 1.5;
 }
 
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.menu-buttons .btn-neon {
+  min-width: 280px;
+}
+
 .btn-neon {
   font-family: 'Orbitron', sans-serif;
   font-weight: 700;
@@ -203,3 +213,76 @@ body {
 .note-legend span[data-note="G"] { border-color: var(--neon-orange); color: var(--neon-orange); }
 .note-legend span[data-note="A"] { border-color: var(--neon-red); color: var(--neon-red); }
 .note-legend span[data-note="B"] { border-color: var(--neon-purple); color: var(--neon-purple); }
+
+/* ——— Countdown ——— */
+.screen-countdown {
+  gap: 1rem;
+}
+
+.countdown-number {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 6rem;
+  color: var(--neon-cyan);
+  text-shadow: var(--glow-cyan);
+  line-height: 1;
+}
+
+.countdown-hint {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+/* ——— Rhythm screen ——— */
+.screen-rhythm {
+  gap: 1.5rem;
+}
+
+.rhythm-hud {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  font-size: 1.5rem;
+}
+
+.rhythm-current {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  color: var(--neon-cyan);
+  text-shadow: var(--glow-cyan);
+  min-width: 120px;
+}
+
+.rhythm-progress {
+  opacity: 0.8;
+}
+
+.rhythm-instruction {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+/* ——— Result screen ——— */
+.screen-result {
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.result-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  color: var(--neon-cyan);
+}
+
+.result-score {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 4rem;
+  color: var(--neon-green);
+  text-shadow: var(--glow-green);
+}
+
+.result-detail {
+  font-size: 1rem;
+  opacity: 0.9;
+}

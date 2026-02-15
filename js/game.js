@@ -78,6 +78,9 @@ let currentObstacleNote = null;
 let sungNote = null;
 let animId = null;
 let onNoteChangeCallback = null;
+let cameraX = 0;
+const CAMERA_OFFSET = 280;
+const WORLD_W = 2400;
 
 function getObstacleAt(x) {
   if (!level) return null;
@@ -156,7 +159,7 @@ function drawNoteLanes() {
     const y = NOTE_ZONE_TOP + i * LANE_HEIGHT;
     ctx.beginPath();
     ctx.moveTo(0, y);
-    ctx.lineTo(CANVAS_W, y);
+    ctx.lineTo(WORLD_W, y);
     ctx.stroke();
   }
   ctx.restore();
@@ -170,14 +173,14 @@ function drawFloor() {
   g.addColorStop(0.5, 'rgba(0,245,255,0.05)');
   g.addColorStop(1, 'transparent');
   ctx.fillStyle = g;
-  ctx.fillRect(0, y - 20, CANVAS_W, CANVAS_H - y + 20);
+  ctx.fillRect(0, y - 20, WORLD_W, CANVAS_H - y + 20);
   ctx.strokeStyle = 'rgba(0,245,255,0.6)';
   ctx.lineWidth = 3;
   ctx.shadowColor = '#00f5ff';
   ctx.shadowBlur = 15;
   ctx.beginPath();
   ctx.moveTo(0, y);
-  ctx.lineTo(CANVAS_W, y);
+  ctx.lineTo(WORLD_W, y);
   ctx.stroke();
   ctx.restore();
 }
@@ -186,10 +189,13 @@ function draw() {
   ctx.fillStyle = '#0a0a0f';
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
+  ctx.save();
+  ctx.translate(-cameraX, 0);
   drawNoteLanes();
   level.obstacles.forEach(drawObstacle);
   drawFloor();
   drawBall();
+  ctx.restore();
 }
 
 const BALL_Y_MIN = NOTE_ZONE_TOP + BALL_R;
@@ -209,6 +215,8 @@ function update(dt) {
   ball.y = Math.max(BALL_Y_MIN, Math.min(BALL_Y_MAX, ball.y));
 
   ball.x += ball.vx * dt;
+
+  cameraX = Math.max(0, ball.x - CAMERA_OFFSET);
 
   const obstacle = getObstacleAt(ball.x);
   if (obstacle) {
@@ -246,6 +254,7 @@ function startGame(onCurrentNoteChange) {
   level = createLevel();
   const startY = getLaneYCenter('F');
   ball = { x: 80, y: startY, vx: BALL_SPEED, vy: 0 };
+  cameraX = 0;
   sungNote = null;
   currentObstacleNote = level.obstacles[0].note;
   if (typeof onCurrentNoteChange === 'function') onCurrentNoteChange(currentObstacleNote);
