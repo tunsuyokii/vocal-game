@@ -132,40 +132,10 @@ function playNoteOnce(noteName) {
       playBuf(noteBuffers[noteName]);
       return;
     }
-    if (NOTE_FREQS[noteName]) {
-      const ctx = getAudioContext();
-      const osc = ctx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = NOTE_FREQS[noteName];
-      const g = ctx.createGain();
-      g.gain.value = 0.3;
-      osc.connect(g);
-      g.connect(gainNode);
-      osc.start(0);
-      const dur = 1;
-      g.gain.setTargetAtTime(0, ctx.currentTime + dur - 0.05, 0.02);
-      osc.stop(ctx.currentTime + dur);
-      currentNoteSource = osc;
-      setTimeout(() => resolve(dur), dur * 1000);
-      return;
-    }
     loadNoteBuffer(noteName).then((buffer) => {
       if (buffer) {
         noteBuffers[noteName] = buffer;
         playBuf(buffer);
-      } else if (NOTE_FREQS[noteName]) {
-        const ctx = getAudioContext();
-        const osc = ctx.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.value = NOTE_FREQS[noteName];
-        const g = ctx.createGain();
-        g.gain.value = 0.3;
-        osc.connect(g);
-        g.connect(gainNode);
-        osc.start(0);
-        osc.stop(ctx.currentTime + 1);
-        currentNoteSource = osc;
-        setTimeout(() => resolve(1), 1000);
       } else {
         resolve(1);
       }

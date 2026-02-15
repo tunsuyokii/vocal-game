@@ -7,9 +7,14 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <div class="bg-layer" aria-hidden="true">
+    <img class="bg-logo" src="images/logo.png" alt="">
+  </div>
+  <div class="sparkle-overlay" aria-hidden="true"></div>
+
   <div class="screen screen-start" id="screen-start">
     <h1 class="title">Vocal Ball</h1>
     <p class="subtitle">Выберите режим</p>
@@ -26,17 +31,25 @@
   </div>
 
   <div class="screen screen-rhythm hidden" id="screen-rhythm">
+    <div class="rhythm-track" id="rhythm-track"></div>
     <div class="rhythm-hud">
       <span class="rhythm-current" id="rhythm-current">—</span>
+      <span class="rhythm-next-label">Следующая:</span>
+      <span class="rhythm-next" id="rhythm-next">—</span>
       <span class="rhythm-progress" id="rhythm-progress">0 / 15</span>
     </div>
-    <p class="rhythm-instruction" id="rhythm-instruction">Пойте в микрофон</p>
+    <p class="rhythm-instruction" id="rhythm-instruction">Пойте в микрофон текущую ноту</p>
   </div>
 
   <div class="screen screen-result hidden" id="screen-result">
     <h2 class="result-title">Результат</h2>
     <div class="result-score" id="result-score">0 %</div>
     <p class="result-detail" id="result-detail">0 попаданий из 15</p>
+    <div class="result-hold" id="result-hold">Удержание ноты: 0 %</div>
+    <div class="result-errors-wrap" id="result-errors-wrap">
+      <h3 class="result-errors-title">Ошибки</h3>
+      <ul class="result-errors-list" id="result-errors-list"></ul>
+    </div>
     <button class="btn-neon" id="btn-back">В меню</button>
   </div>
 

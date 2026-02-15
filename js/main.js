@@ -12,11 +12,16 @@ const el = {
   btnRhythm: document.getElementById('btn-rhythm'),
   btnBack: document.getElementById('btn-back'),
   countdownNum: document.getElementById('countdown-num'),
+  rhythmTrack: document.getElementById('rhythm-track'),
   rhythmCurrent: document.getElementById('rhythm-current'),
+  rhythmNext: document.getElementById('rhythm-next'),
   rhythmProgress: document.getElementById('rhythm-progress'),
   rhythmInstruction: document.getElementById('rhythm-instruction'),
   resultScore: document.getElementById('result-score'),
   resultDetail: document.getElementById('result-detail'),
+  resultHold: document.getElementById('result-hold'),
+  resultErrorsWrap: document.getElementById('result-errors-wrap'),
+  resultErrorsList: document.getElementById('result-errors-list'),
   currentNote: document.getElementById('current-note'),
   youSing: document.getElementById('you-sing'),
   micIndicator: document.getElementById('mic-indicator')
@@ -40,7 +45,7 @@ function setCurrentNoteUI(note) {
   }
   el.currentNote.textContent = Game.NOTE_LABELS[note] || note;
   el.currentNote.className = 'current-note';
-  el.currentNote.style.color = getComputedStyle(document.documentElement).getPropertyValue('--neon-cyan');
+  el.currentNote.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent');
   AudioModule.playNote(note, true);
 }
 
@@ -53,6 +58,26 @@ function setYouSingUI(note) {
 
 function setMicActive(active) {
   if (el.micIndicator) el.micIndicator.classList.toggle('active', active);
+}
+
+function buildRhythmTrack() {
+  if (!el.rhythmTrack) return;
+  el.rhythmTrack.innerHTML = '';
+  RhythmGame.SEQUENCE.forEach((noteName, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'rhythm-note';
+    cell.dataset.index = String(i);
+    cell.textContent = RhythmGame.LABELS[noteName] || noteName;
+    el.rhythmTrack.appendChild(cell);
+  });
+}
+
+function setRhythmTrackCurrent(index) {
+  if (!el.rhythmTrack) return;
+  el.rhythmTrack.querySelectorAll('.rhythm-note').forEach((c, i) => {
+    c.classList.toggle('current', i === index);
+    c.classList.toggle('next', i === index + 1);
+  });
 }
 
 async function startPlatformer() {
@@ -96,8 +121,9 @@ async function startRhythm() {
     });
     setMicActive(true);
 
+    buildRhythmTrack();
     showScreen('screen-countdown');
-    el.countdownNum.textContent = '5';
+    if (el.countdownNum) el.countdownNum.textContent = '5';
 
     await RhythmGame.run({
       getSungNote: () => currentSungNote,
@@ -107,13 +133,31 @@ async function startRhythm() {
       onNoteStart: (noteName, index, total) => {
         showScreen('screen-rhythm');
         if (el.rhythmCurrent) el.rhythmCurrent.textContent = RhythmGame.LABELS[noteName] || noteName;
-        if (el.rhythmProgress) el.rhythmProgress.textContent = index + ' / ' + total;
+        const nextName = RhythmGame.SEQUENCE[index + 1];
+        if (el.rhythmNext) el.rhythmNext.textContent = nextName ? RhythmGame.LABELS[nextName] || nextName : '—';
+        if (el.rhythmProgress) el.rhythmProgress.textContent = (index + 1) + ' / ' + total;
+        setRhythmTrackCurrent(index);
       },
       onNoteEnd: () => {},
-      onResult: (hits, total, percent) => {
+      onResult: (data) => {
         showScreen('screen-result');
-        if (el.resultScore) el.resultScore.textContent = percent + ' %';
-        if (el.resultDetail) el.resultDetail.textContent = hits + ' попаданий из ' + total;
+        if (el.resultScore) el.resultScore.textContent = data.percent + ' %';
+        if (el.resultDetail) el.resultDetail.textContent = data.hitsCount + ' попаданий из ' + data.total;
+        if (el.resultHold) el.resultHold.textContent = 'Удержание ноты: ' + data.holdPercent + ' %';
+        if (el.resultErrorsList) {
+          el.resultErrorsList.innerHTML = '';
+          if (data.errors && data.errors.length > 0) {
+            data.errors.forEach((e) => {
+              const li = document.createElement('li');
+              const sung = e.sung ? (RhythmGame.LABELS[e.sung] || e.sung) : '—';
+              li.textContent = 'Нота ' + (RhythmGame.LABELS[e.expected] || e.expected) + ' → спели ' + sung;
+              el.resultErrorsList.appendChild(li);
+            });
+          }
+        }
+        if (el.resultErrorsWrap) {
+          el.resultErrorsWrap.style.display = data.errors && data.errors.length > 0 ? 'block' : 'none';
+        }
       }
     });
   } catch (err) {
@@ -125,12 +169,6 @@ async function startRhythm() {
   }
 }
 
-if (el.btnPlatform) {
-  el.btnPlatform.addEventListener('click', startPlatformer);
-}
-if (el.btnRhythm) {
-  el.btnRhythm.addEventListener('click', startRhythm);
-}
-if (el.btnBack) {
-  el.btnBack.addEventListener('click', () => showScreen('screen-start'));
-}
+if (el.btnPlatform) el.btnPlatform.addEventListener('click', startPlatformer);
+if (el.btnRhythm) el.btnRhythm.addEventListener('click', startRhythm);
+if (el.btnBack) el.btnBack.addEventListener('click', () => showScreen('screen-start'));
