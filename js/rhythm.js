@@ -2,7 +2,7 @@
  * Rhythm game: sing the sequence Do->...->Do2->Do2->...->Do, get score % and per-note details.
  */
 
-const RHYTHM_SEQUENCE = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'Do2', 'Do2', 'A', 'G', 'F', 'E', 'D', 'C'];
+const RHYTHM_SEQUENCE = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'Do2', 'Do2', 'B', 'A', 'G', 'F', 'E', 'D', 'C'];
 const RHYTHM_LABELS = { C: 'До', D: 'Ре', E: 'Ми', F: 'Фа', G: 'Соль', A: 'Ля', B: 'Си', Do2: 'До²' };
 const SAMPLE_INTERVAL_MS = 80;
 const HIT_RATIO = 0.3;
