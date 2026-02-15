@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vocal Ball — Вокальная распевка</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="screen screen-start" id="screen-start">
+    <h1 class="title">Vocal Ball</h1>
+    <p class="subtitle">Спой нужную ноту — шарик преодолеет препятствие</p>
+    <button class="btn-neon" id="btn-start">Начать игру</button>
+    <p class="hint">Разрешите доступ к микрофону для управления голосом</p>
+  </div>
+
+  <div class="screen screen-game hidden" id="screen-game">
+    <div class="hud">
+      <div class="current-note" id="current-note">—</div>
+      <div class="you-sing" id="you-sing">Вы поёте: —</div>
+      <div class="mic-indicator" id="mic-indicator">
+        <span class="mic-dot"></span> Микрофон
+      </div>
+    </div>
+    <canvas id="game-canvas"></canvas>
+    <div class="note-legend">
+      <span data-note="C">До</span>
+      <span data-note="D">Ре</span>
+      <span data-note="E">Ми</span>
+      <span data-note="F">Фа</span>
+      <span data-note="G">Соль</span>
+      <span data-note="A">Ля</span>
+      <span data-note="B">Си</span>
+    </div>
+  </div>
+
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
