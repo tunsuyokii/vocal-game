@@ -1,8 +1,12 @@
 /**
- * Rhythm game: sing the sequence Do->...->Do2->Do2->...->Do, get score % and per-note details.
+ * Rhythm game: sing the sequence, get score % and per-note details.
+ * Последовательность: До→Ре→Ми→Фа→Соль→Ля→Си→До²→До²→Си→Ля→Соль→Фа→Ми→Ре→До (16 нот)
  */
-
-const RHYTHM_SEQUENCE = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'Do2', 'Do2', 'B', 'A', 'G', 'F', 'E', 'D', 'C'];
+const RHYTHM_SEQUENCE = [
+  'C', 'D', 'E', 'F', 'G', 'A', 'B',   /* До Ре Ми Фа Соль Ля Си */
+  'Do2', 'Do2',                         /* До² До² */
+  'B', 'A', 'G', 'F', 'E', 'D', 'C'    /* Си Ля Соль Фа Ми Ре До */
+];
 const RHYTHM_LABELS = { C: 'До', D: 'Ре', E: 'Ми', F: 'Фа', G: 'Соль', A: 'Ля', B: 'Си', Do2: 'До²' };
 const SAMPLE_INTERVAL_MS = 80;
 const HIT_RATIO = 0.3;
