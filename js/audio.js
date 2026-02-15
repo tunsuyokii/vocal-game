@@ -1,5 +1,5 @@
 /**
- * Piano notes (4th octave) and pitch detection for vocal control.
+ * Piano notes from MP3 (loop until next note) and pitch detection for vocal control.
  */
 
 const NOTE_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
@@ -13,14 +13,26 @@ const NOTE_FREQS = {
   B: 493.88
 };
 
+const NOTE_FILE_NAMES = {
+  C: ['C', 'До'],
+  D: ['D', 'Ре'],
+  E: ['E', 'Ми'],
+  F: ['F', 'Фа'],
+  G: ['G', 'Соль'],
+  A: ['A', 'Ля'],
+  B: ['B', 'Си']
+};
+
+const NOTES_BASE = 'sounds/notes/';
+
 let audioContext = null;
 let micStream = null;
 let analyser = null;
 let micSource = null;
-let currentNoteOscillators = [];
+let currentNoteSource = null;
 let gainNode = null;
+let noteBuffers = {};
 let fftSize = 2048;
-let scriptProcessor = null;
 let dataArray = null;
 let bufferLength = 0;
 
@@ -31,34 +43,59 @@ function getAudioContext() {
   return audioContext;
 }
 
-function initPiano() {
+function ensureGain() {
   const ctx = getAudioContext();
   if (!gainNode) {
     gainNode = ctx.createGain();
-    gainNode.gain.value = 0.25;
+    gainNode.gain.value = 0.35;
     gainNode.connect(ctx.destination);
   }
 }
 
 function stopCurrentNote() {
-  currentNoteOscillators.forEach(o => {
+  if (currentNoteSource) {
     try {
-      o.stop();
-      o.disconnect();
+      currentNoteSource.stop();
+      currentNoteSource.disconnect();
     } catch (_) {}
-  });
-  currentNoteOscillators = [];
+    currentNoteSource = null;
+  }
 }
 
-function playNote(noteName, loop = true) {
+function playBuffer(buffer) {
+  const ctx = getAudioContext();
+  ensureGain();
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+  source.connect(gainNode);
+  source.start(0);
+  currentNoteSource = source;
+}
+
+function loadNoteBuffer(noteName) {
+  const ctx = getAudioContext();
+  const tries = NOTE_FILE_NAMES[noteName];
+  if (!tries) return Promise.resolve(null);
+
+  function tryLoad(index) {
+    if (index >= tries.length) return Promise.resolve(null);
+    const name = tries[index];
+    const url = NOTES_BASE + encodeURIComponent(name) + '.mp3';
+    return fetch(url)
+      .then(r => (r.ok ? r.arrayBuffer() : Promise.reject()))
+      .then(ab => ctx.decodeAudioData(ab))
+      .catch(() => tryLoad(index + 1));
+  }
+
+  return tryLoad(0);
+}
+
+function playNoteOscillator(noteName) {
   const ctx = getAudioContext();
   const freq = NOTE_FREQS[noteName];
   if (!freq) return;
-
-  stopCurrentNote();
-  initPiano();
-
-  // Simple "piano-like" tone: fundamental + weak harmonic
+  ensureGain();
   const osc1 = ctx.createOscillator();
   osc1.type = 'sine';
   osc1.frequency.value = freq;
@@ -66,25 +103,27 @@ function playNote(noteName, loop = true) {
   g1.gain.value = 1;
   osc1.connect(g1);
   g1.connect(gainNode);
-
-  const osc2 = ctx.createOscillator();
-  osc2.type = 'sine';
-  osc2.frequency.value = freq * 2;
-  const g2 = ctx.createGain();
-  g2.gain.value = 0.2;
-  osc2.connect(g2);
-  g2.connect(gainNode);
-
   osc1.start(0);
-  osc2.start(0);
-  currentNoteOscillators = [osc1, osc2];
+  currentNoteSource = osc1;
+}
 
-  if (!loop) {
-    const stopTime = ctx.currentTime + 0.15;
-    osc1.stop(stopTime);
-    osc2.stop(stopTime);
-    currentNoteOscillators = [];
+function playNote(noteName, loop = true) {
+  if (!NOTE_NAMES.includes(noteName)) return;
+  stopCurrentNote();
+  ensureGain();
+
+  if (noteBuffers[noteName]) {
+    playBuffer(noteBuffers[noteName]);
+    return;
   }
+  loadNoteBuffer(noteName).then((buffer) => {
+    if (buffer) {
+      noteBuffers[noteName] = buffer;
+      playBuffer(buffer);
+    } else {
+      playNoteOscillator(noteName);
+    }
+  });
 }
 
 function freqToNote(freq) {
