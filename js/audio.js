@@ -88,29 +88,36 @@ function playNote(noteName, loop = true) {
 }
 
 function freqToNote(freq) {
-  if (!freq || freq < 80 || freq > 1200) return null;
+  if (!freq || freq < 65 || freq > 1400) return null;
   const A4 = 440;
   const midi = 69 + 12 * Math.log2(freq / A4);
   const noteIndex = Math.round(midi) % 12;
   const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const name = noteNames[noteIndex];
-  return NOTE_NAMES.includes(name) ? name : null;
+  if (NOTE_NAMES.includes(name)) return name;
+  const sharpToNatural = { 'C#': 'C', 'D#': 'D', 'F#': 'F', 'G#': 'G', 'A#': 'A' };
+  return sharpToNatural[name] || null;
 }
+
+const VOCAL_FREQ_MIN = 90;
+const VOCAL_FREQ_MAX = 650;
 
 function getPeakFrequency() {
   if (!analyser || !dataArray) return null;
   analyser.getByteFrequencyData(dataArray);
+  const sampleRate = audioContext.sampleRate;
+  const binFreq = sampleRate / fftSize;
+  const iMin = Math.max(1, Math.floor(VOCAL_FREQ_MIN / binFreq));
+  const iMax = Math.min(bufferLength - 2, Math.ceil(VOCAL_FREQ_MAX / binFreq));
   let maxMag = 0;
   let maxIndex = 0;
-  for (let i = 1; i < bufferLength - 1; i++) {
+  for (let i = iMin; i <= iMax; i++) {
     if (dataArray[i] > maxMag) {
       maxMag = dataArray[i];
       maxIndex = i;
     }
   }
-  if (maxMag < 55) return null;
-  const sampleRate = audioContext.sampleRate;
-  // Parabolic interpolation for better frequency estimate
+  if (maxMag < 18) return null;
   const l = dataArray[maxIndex - 1] || 0;
   const c = dataArray[maxIndex];
   const r = dataArray[maxIndex + 1] || 0;
@@ -122,35 +129,55 @@ function getPeakFrequency() {
 
 async function initMicrophone(onNoteDetected) {
   const ctx = getAudioContext();
-  micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,
+        autoGainControl: false,
+        noiseSuppression: false
+      }
+    });
+  } catch (_) {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  }
   micSource = ctx.createMediaStreamSource(micStream);
   analyser = ctx.createAnalyser();
   analyser.fftSize = fftSize;
-  analyser.smoothingTimeConstant = 0.88;
-  analyser.minDecibels = -50;
-  analyser.maxDecibels = -15;
+  analyser.smoothingTimeConstant = 0.65;
+  analyser.minDecibels = -65;
+  analyser.maxDecibels = -5;
   micSource.connect(analyser);
   bufferLength = analyser.frequencyBinCount;
   dataArray = new Uint8Array(bufferLength);
 
   let lastNote = null;
   let stableCount = 0;
+  let silentFrames = 0;
+  const SILENT_FRAMES_BEFORE_CLEAR = 8;
 
   function tick() {
     const freq = getPeakFrequency();
     const note = freq ? freqToNote(freq) : null;
     if (note) {
+      silentFrames = 0;
       if (note === lastNote) {
         stableCount++;
-        if (stableCount >= 10) onNoteDetected(note);
+        if (stableCount >= 2) onNoteDetected(note);
       } else {
         lastNote = note;
         stableCount = 1;
       }
     } else {
-      lastNote = null;
-      stableCount = 0;
-      onNoteDetected(null);
+      if (lastNote !== null) {
+        silentFrames++;
+        if (silentFrames >= SILENT_FRAMES_BEFORE_CLEAR) {
+          lastNote = null;
+          stableCount = 0;
+          onNoteDetected(null);
+        }
+      } else {
+        onNoteDetected(null);
+      }
     }
     requestAnimationFrame(tick);
   }
