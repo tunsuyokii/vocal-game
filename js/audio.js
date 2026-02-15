@@ -214,7 +214,7 @@ function getPeakFrequency() {
     const iFund = Math.round(fundBin);
     if (iFund >= 1 && iFund < bufferLength) {
       const magFund = dataArray[iFund] || 0;
-      if (magFund >= maxMag * 0.35) freq = freq / 2;
+      if (magFund >= maxMag * 0.65) freq = freq / 2;
     }
   }
   return freq;
