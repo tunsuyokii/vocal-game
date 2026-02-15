@@ -1,0 +1,13 @@
+---
+description: After any code changes, always commit and push to git
+alwaysApply: true
+---
+
+# Git: push after changes
+
+После любых изменений в коде проекта vocal-game:
+
+1. Проверить `git status`.
+2. Если есть изменения — выполнить `git add`, `git commit` с осмысленным сообщением и `git push origin main`.
+
+Не оставлять незапушенные коммиты в конце сессии.
