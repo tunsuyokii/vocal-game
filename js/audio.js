@@ -49,7 +49,7 @@ function ensureGain() {
   const ctx = getAudioContext();
   if (!gainNode) {
     gainNode = ctx.createGain();
-    gainNode.gain.value = 0.35;
+    gainNode.gain.value = 3.5;
     gainNode.connect(ctx.destination);
   }
 }
@@ -282,7 +282,7 @@ function metronome(beats, bpm) {
       osc.type = 'sine';
       osc.frequency.value = 440;
       const g = ctx.createGain();
-      g.gain.value = 0.15;
+      g.gain.value = 0.5;
       osc.connect(g);
       g.connect(gainNode);
       osc.start(ctx.currentTime);
