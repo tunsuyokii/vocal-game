@@ -9,7 +9,8 @@ const RHYTHM_SEQUENCE = [
 ];
 const RHYTHM_LABELS = { C: 'До', D: 'Ре', E: 'Ми', F: 'Фа', G: 'Соль', A: 'Ля', B: 'Си', Do2: 'До²' };
 const SAMPLE_INTERVAL_MS = 80;
-const HIT_RATIO = 0.3;
+const HIT_RATIO = 0.5;
+const VOICE_THRESHOLD = 52;
 
 function mostFrequent(arr) {
   const counts = {};
@@ -27,7 +28,8 @@ function mostFrequent(arr) {
 }
 
 async function runRhythmGame(options) {
-  const { getSungNote, onCountdown, onNoteStart, onNoteEnd, onResult } = options;
+  const { getSungNote, getPeakMagnitude, onCountdown, onNoteStart, onNoteEnd, onResult } = options;
+  const hasVoice = typeof getPeakMagnitude === 'function';
   const noteNames = [...new Set(RHYTHM_SEQUENCE)];
   await window.AudioModule.preloadRhythmNotes(noteNames);
 
@@ -55,6 +57,7 @@ async function runRhythmGame(options) {
     const samples = [];
     const playbackDone = window.AudioModule.playNoteOnce(expectedNote);
     const interval = setInterval(() => {
+      if (hasVoice && getPeakMagnitude() < VOICE_THRESHOLD) return;
       samples.push(getSungNote());
     }, SAMPLE_INTERVAL_MS);
 

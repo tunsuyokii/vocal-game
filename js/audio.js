@@ -38,6 +38,7 @@ let noteBuffers = {};
 let fftSize = 2048;
 let dataArray = null;
 let bufferLength = 0;
+let lastPeakMag = 0;
 
 function getAudioContext() {
   if (!audioContext) {
@@ -202,6 +203,7 @@ function getPeakFrequency() {
       maxIndex = i;
     }
   }
+  lastPeakMag = maxMag;
   if (maxMag < 18) return null;
   const l = dataArray[maxIndex - 1] || 0;
   const c = dataArray[maxIndex];
@@ -319,6 +321,10 @@ async function preloadRhythmNotes(noteNames) {
   }
 }
 
+function getPeakMagnitude() {
+  return lastPeakMag;
+}
+
 window.AudioModule = {
   NOTE_NAMES,
   NOTE_FREQS,
@@ -326,6 +332,7 @@ window.AudioModule = {
   playNoteOnce,
   stopCurrentNote,
   getNoteDuration,
+  getPeakMagnitude,
   initMicrophone,
   stopMicrophone,
   getAudioContext,

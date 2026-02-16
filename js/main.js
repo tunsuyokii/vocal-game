@@ -127,6 +127,7 @@ async function startRhythm() {
 
     await RhythmGame.run({
       getSungNote: () => currentSungNote,
+      getPeakMagnitude: () => (window.AudioModule.getPeakMagnitude ? window.AudioModule.getPeakMagnitude() : 255),
       onCountdown: (n) => {
         if (el.countdownNum) el.countdownNum.textContent = String(n);
       },
